@@ -12,5 +12,9 @@ void kernel_init() {
     console_init();
     gdt_init();
     interrupt_init();
+    asm volatile(
+        "sti\n"
+        "movl %eax, %eax\n"
+    );
     return;
 }

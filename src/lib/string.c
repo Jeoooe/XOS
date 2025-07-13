@@ -76,10 +76,11 @@ void *memset(void *dest, int ch, size_t count) {
     }
     return dest;
 }
+//复制内存数据
 void *memcpy(void *dest, const void *src, size_t count) {
     char *ptr = dest;
     while (count) {
-        *ptr = ((char *) src);
+        *ptr = *((char *)src);
         ++src;
         ++ptr;
         --count;
