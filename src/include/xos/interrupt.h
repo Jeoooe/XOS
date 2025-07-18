@@ -5,6 +5,25 @@
 
 #define IDT_SIZE 256
 
+//中断向量位
+#define IRQ_CLOCK           0
+#define IRQ_KEYBOARD        1
+#define IRQ_CASCADE         2   //从片控制器
+#define IRQ_SERIAL_2        3   //串口2
+#define IRQ_SERIAL_1        4
+#define IRQ_PARALLEL_2      5   //并口
+#define IRQ_FLOPPY          6   //软盘控制器
+#define IRQ_PARALLEL_1      7
+#define IRQ_RTC             8
+#define IRQ_REDIRECT        9   //重定向IRQ2
+#define IRQ_MOUSE           12
+#define IRQ_MATH            13  //协处理器 x87
+#define IRQ_HARDDISK        14
+#define IRQ_HARDDIST_2      15
+
+#define IRQ_MASTER_NR       0x20  //主片向量起始
+#define IRQ_SLAVE_NR        0x28  //从片向量起始
+
 /*
     中断描述符
     8字节
@@ -25,6 +44,10 @@ typedef struct gate_t {
 //中断处理函数
 typedef void *handler_t;
 
-void interrupt_init();
+void send_eoi(int vector);
 
+//设置中断处理函数
+void set_intterupt_handler(u32 irq, handler_t handler);
+//开启和关闭中断
+void set_intterupt_mask(u32 irq, bool enable);
 #endif

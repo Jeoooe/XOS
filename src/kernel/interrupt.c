@@ -6,6 +6,7 @@
 #include <xos/stdlib.h>
 #include <xos/io.h>
 #include <xos/task.h>
+#include <xos/assert.h>
 
 #define LOGK(fmt, args...) DEBUGK(fmt, ##args)
 
@@ -35,11 +36,35 @@ void send_eoi(int vector) {
     }
 }
 
-extern void schedule();
+void set_intterupt_handler(u32 irq, handler_t handler) {
+    assert(irq >= 0 && irq < 16);
+    handler_table[IRQ_MASTER_NR + irq] = handler;
+}
+
+//开启和关闭中断
+void set_intterupt_mask(u32 irq, bool enable)  {
+    assert(irq >= 0 && irq < 16);
+    u16 port;
+    if (irq < 8) {
+        port = PIC_M_DATA;
+    } else {
+        port = PIC_S_DATA;
+        irq -= 8;
+    }
+    // 位=1是关闭
+    if (enable) {
+        outb(port, inb(port) & ~(1 << irq));
+    } else {
+        outb(port, inb(port) | (1 << irq));
+    }
+}
+
+u32 counter = 0;
 
 void default_handler(int vector) {
     send_eoi(vector);
-    schedule();
+    DEBUGK("[%x] default interrupt called %d", vector, counter);
+    ++counter;
 }
 
 void exception_handler(
@@ -70,7 +95,7 @@ void pic_init() {
     outb(PIC_S_DATA, 2);
     outb(PIC_S_DATA, 0b00000001);
 
-    outb(PIC_M_DATA, 0b11111110);
+    outb(PIC_M_DATA, 0b11111111);   //关闭所有中断
     outb(PIC_S_DATA, 0b11111111);
 }
 

@@ -107,7 +107,7 @@ static void scroll_up() {
     } 
     u32 *ptr = (u32 *)(screen + SCR_SIZE);
     for (size_t i = 0;i < WIDTH; ++i) {
-        *(u16 *)ptr = erase;
+        *ptr = erase;
         ++ptr;
     }
     screen += ROW_SIZE;
@@ -128,7 +128,7 @@ static void command_cr() {
     x = 0;
 }
 
-
+extern void start_beep();
 
 void console_write(char *buf, u32 count) {
     char ch;
@@ -144,6 +144,7 @@ void console_write(char *buf, u32 count) {
             break;
         case ASCII_BEL:
             // \a
+            start_beep();
             break;
         case ASCII_BS:
             command_bs();
