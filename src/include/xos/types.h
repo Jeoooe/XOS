@@ -11,6 +11,7 @@
 #define true 1
 #define false 0
 
+#define _ofp __attribute__((optimize("omit-frame-pointer")))
 #define _packed __attribute__((packed)) //定义特殊结构 gcc
 
 typedef unsigned int size_t;

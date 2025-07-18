@@ -5,6 +5,7 @@
 #include <xos/debug.h>
 #include <xos/stdlib.h>
 #include <xos/io.h>
+#include <xos/task.h>
 
 #define LOGK(fmt, args...) DEBUGK(fmt, ##args)
 
@@ -24,8 +25,6 @@ pointer_t idt_ptr;      //中断描述符指针
 handler_t handler_table[IDT_SIZE];
 extern handler_t handler_entry_table[ENTRY_SIZE];
 
-u32 counter = 0;
-
 void send_eoi(int vector) {
     if (vector >= 0x20 && vector < 0x28) {
         outb(PIC_M_CTRL, PIC_EOI);
@@ -36,15 +35,26 @@ void send_eoi(int vector) {
     }
 }
 
+extern void schedule();
+
 void default_handler(int vector) {
     send_eoi(vector);
-    LOGK("[%d] default interrupt %d", vector, counter);
-    ++counter;
+    schedule();
 }
 
-void exception_handler(int vector) {
+void exception_handler(
+    int vector,
+    u32 edi, u32 esi, u32 ebp, u32 esp,
+    u32 ebx, u32 edx, u32 ecx, u32 eax,
+    u32 vector0, u32 error, u32 eip, u32 cs, u32 eflags) {
 
-    printk("[%d] exception interrupt", vector);
+    printk("\n ---EXCEPTION---");
+    printk("\n VECTOR: %d", vector);
+    printk("\n  ERROR: %d", error);
+    printk("\n EFLAGS: %d", eflags);
+    printk("\n     CS: %d", cs);
+    printk("\n    EIP: %d", eip);
+    printk("\n    ESP: %d", esp);
 
     hang();
 }

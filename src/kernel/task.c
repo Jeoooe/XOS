@@ -1,4 +1,6 @@
 #include <xos/task.h>
+#include <xos/printk.h>
+#include <xos/debug.h>
 
 #define PAGE_SIZE 0x1000
 
@@ -21,6 +23,21 @@ void schedule() {
     task_switch(next);
 }
 
+u32 _ofp thread_a() {
+    BMB;
+    asm volatile("sti");
+    while (true) {
+        printk("A");
+    }
+}
+
+u32 _ofp thread_b() {
+    asm volatile("sti");
+    while (true) {
+        printk("B");
+    }
+}
+
 static void task_create(task_t *task, target_t target) {
     u32 stack = (u32)task + PAGE_SIZE;
     stack -= sizeof(task_frame_t);
@@ -35,5 +52,7 @@ static void task_create(task_t *task, target_t target) {
 }
 
 void task_init() {
-
+    task_create(a, thread_a);
+    task_create(b, thread_b);
+    schedule();
 }

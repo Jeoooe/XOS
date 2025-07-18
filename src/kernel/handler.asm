@@ -7,16 +7,34 @@ section .text   ;代码段
 interrupt_handler_%1:
 xchg bx, bx
 %ifn %2
-    push 0x20200202
+    push 0x20222202
 %endif
     push %1
     jmp interrupt_entry
 %endmacro
 
 interrupt_entry:
-    mov eax, [esp]
+
+    push ds
+    push es
+    push fs
+    push gs
+    pusha
+
+    mov eax, [esp + 12 * 4]
+
+    push eax
+
     call [handler_table + eax * 4]
     
+    add esp, 4
+    
+    popa
+    pop gs
+    pop fs
+    pop es
+    pop ds
+
     add esp, 8
     iret
 
