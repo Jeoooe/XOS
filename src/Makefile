@@ -38,6 +38,8 @@ $(BUILD)/kernel.bin: \
 	$(BUILD)/kernel/debug.o \
 	$(BUILD)/kernel/clock.o \
 	$(BUILD)/kernel/time.o \
+	$(BUILD)/kernel/memory.o \
+	$(BUILD)/kernel/rtc.o \
 	$(BUILD)/lib/string.o \
 	$(BUILD)/lib/vsprintf.o \
 	$(BUILD)/lib/stdlib.o \
@@ -69,20 +71,17 @@ clean:
 bochs: $(BUILD)/master.img
 	bochs -q
 
+QEMU:= qemu-system-i386 \
+	-m 32M \
+	-boot c \
+	-drive file=$(BUILD)/master.img,if=ide,index=0,media=disk,format=raw \
+	-audiodev pa,id=hda \
+	-machine pcspk-audiodev=hda \
+	-rtc base=localtime \
+
 .PHONY: qemu qemug
 qemu: $(BUILD)/master.img
-	qemu-system-i386 \
-	-m 32M \
-	-boot c \
-	-drive file=$<,if=ide,index=0,media=disk,format=raw \
-	-audiodev pa,id=hda \
-	-machine pcspk-audiodev=hda \
+	$(QEMU)
 
 qemug: $(BUILD)/master.img
-	qemu-system-i386 \
-	-s -S \
-	-m 32M \
-	-boot c \
-	-drive file=$<,if=ide,index=0,media=disk,format=raw \
-	-audiodev pa,id=hda \
-	-machine pcspk-audiodev=hda \
+	$(QEMU) -s -S

@@ -8,8 +8,6 @@
 #include <xos/task.h>
 #include <xos/assert.h>
 
-#define LOGK(fmt, args...) DEBUGK(fmt, ##args)
-
 #define ENTRY_SIZE 0x30
 //控制端口
 #define PIC_M_CTRL 0x20
@@ -36,13 +34,13 @@ void send_eoi(int vector) {
     }
 }
 
-void set_intterupt_handler(u32 irq, handler_t handler) {
+void set_interupt_handler(u32 irq, handler_t handler) {
     assert(irq >= 0 && irq < 16);
     handler_table[IRQ_MASTER_NR + irq] = handler;
 }
 
 //开启和关闭中断
-void set_intterupt_mask(u32 irq, bool enable)  {
+void set_interupt_mask(u32 irq, bool enable)  {
     assert(irq >= 0 && irq < 16);
     u16 port;
     if (irq < 8) {

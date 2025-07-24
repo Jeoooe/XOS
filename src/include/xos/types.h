@@ -1,15 +1,19 @@
 #ifndef XOS_TYPES_H
 #define XOS_TYPES_H
 
+#include <xos/xos.h>
+
 #define EOF -1
 
 #define NULL ((void*) 0)
 
 #define EOS '\0'
 
+#ifndef __cplusplus
 #define bool _Bool
 #define true 1
 #define false 0
+#endif
 
 #define _ofp __attribute__((optimize("omit-frame-pointer")))
 #define _packed __attribute__((packed)) //定义特殊结构 gcc

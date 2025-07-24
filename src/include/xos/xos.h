@@ -1,8 +1,7 @@
 #ifndef XOS_H
 #define XOS_H
 
-#define XOS_MAGIC 20250307
+#define XOS_MAGIC 0x20250307
 
-void kernel_init();
 
 #endif

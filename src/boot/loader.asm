@@ -30,7 +30,7 @@ detect_memory:
     add di, cx
 
     ;结构体数量+1
-    inc word [ards_count]
+    inc dword [ards_count]
 
     cmp ebx, 0
     jnz .next
@@ -102,6 +102,9 @@ protect_mode:
     mov ecx, 10          ;内核起始扇区
     mov bl, 200           ;扇区数量 
     call read_disk
+
+    mov eax, 0x20250307
+    mov ebx, ards_count
 
     jmp dword code_selector:0x10000
 
@@ -207,6 +210,6 @@ gdt_data:
 gdt_end:
 
 ards_count:
-    dw 0
+    dd 0
 ards_buffer:    ;BIOS 内存检测缓存
     

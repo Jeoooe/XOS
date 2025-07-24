@@ -1,10 +1,11 @@
 extern void console_init();
 extern void gdt_init();
-extern interrupt_init();
-extern task_init();
-extern hang();
-extern clock_init();
-extern time_init();
+extern void interrupt_init();
+extern void task_init();
+extern void hang();
+extern void clock_init();
+extern void time_init();
+extern void rtc_init();
 
 void kernel_init() {
     console_init();
@@ -13,6 +14,7 @@ void kernel_init() {
 
     clock_init();
     time_init();
+    rtc_init();
 
     asm volatile("sti");
     hang();

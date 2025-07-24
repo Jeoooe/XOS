@@ -47,7 +47,7 @@ typedef void *handler_t;
 void send_eoi(int vector);
 
 //设置中断处理函数
-void set_intterupt_handler(u32 irq, handler_t handler);
+void set_interupt_handler(u32 irq, handler_t handler);
 //开启和关闭中断
-void set_intterupt_mask(u32 irq, bool enable);
+void set_interupt_mask(u32 irq, bool enable);
 #endif

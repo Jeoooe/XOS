@@ -41,12 +41,8 @@ void clock_handler(int vector) {
     assert(vector == 0x20);
     send_eoi(vector);
 
-    if (jiffies % 200 == 0) {
-        start_beep();
-    }
-
     ++jiffies;
-    DEBUGK("clock jiffies %d... \n", jiffies);
+    // DEBUGK("clock jiffies %d... \n", jiffies);
     stop_beep();
 }
 
@@ -62,6 +58,6 @@ void pit_init() {
 
 void clock_init() {
     pit_init();
-    set_intterupt_handler(IRQ_CLOCK, clock_handler);
-    set_intterupt_mask(IRQ_CLOCK, true);
+    set_interupt_handler(IRQ_CLOCK, clock_handler);
+    set_interupt_mask(IRQ_CLOCK, true);
 }

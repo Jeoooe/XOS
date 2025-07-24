@@ -2,8 +2,8 @@
 #include <xos/stdlib.h>
 #include <xos/types.h>
 #include <xos/debug.h>
+#include <xos/rtc.h>
 
-#define LOGK(fmt, args...) DEBUGK(fmt, ##args)
 
 #define CMOS_ADDR 0x70
 #define CMOS_DATA 0x71
@@ -89,10 +89,6 @@ int get_yday(tm *time) {
     return res;
 }
 
-u8 cmos_read(u8 addr) {
-    outb(CMOS_ADDR, CMOS_NMI | addr);
-    return inb(CMOS_DATA);
-}
 
 void time_read_bcd(tm *time) {
     do {
@@ -137,6 +133,4 @@ void time_init() {
         time.tm_min,
         time.tm_sec
     );
-
-    hang();
 }
