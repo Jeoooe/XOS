@@ -24,7 +24,6 @@ void schedule() {
 }
 
 u32 _ofp thread_a() {
-    BMB;
     asm volatile("sti");
     while (true) {
         printk("A");

@@ -3,6 +3,7 @@
 extern console_init
 extern kernel_init
 extern memory_init
+extern gdt_init
 
 global _start
 _start:
@@ -10,6 +11,7 @@ _start:
     push eax    ; magic
 
     call console_init
+    call gdt_init
     call memory_init
-    ; call kernel_init
+    call kernel_init
     jmp $
