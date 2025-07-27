@@ -6,6 +6,14 @@
 #define PAGE_SIZE       0x1000
 #define MEMORY_BASE     0x100000
 
+//内核页目录
+#define KERNEL_PAGE_DIR     0x1000
+
+static u32 KERNEL_PAGE_TABLE[] = {
+    0x2000,
+    0x3000
+};
+
 typedef struct page_entry_t {
     u8 present: 1;
     u8 write: 1;
@@ -22,5 +30,10 @@ typedef struct page_entry_t {
 
 u32 get_cr3();
 void set_cr3(u32 pde);
+
+//分配内核页
+u32 alloc_kpage(u32 count);
+//释放连续内核页
+void free_kpages(u32 addr, u32 count);
 
 #endif

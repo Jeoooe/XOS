@@ -50,4 +50,10 @@ void send_eoi(int vector);
 void set_interupt_handler(u32 irq, handler_t handler);
 //开启和关闭中断
 void set_interupt_mask(u32 irq, bool enable);
+
+
+bool interrupt_disable();       //清除IF并获取清除前的值
+bool get_interrupt_state();     //获取IF位
+void set_interrupt_state(bool state);     //设置IF位
+
 #endif

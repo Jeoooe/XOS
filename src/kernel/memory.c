@@ -5,6 +5,7 @@
 #include <xos/memory.h>
 #include <xos/stdlib.h>
 #include <xos/string.h>
+#include <xos/bitmap.h>
 
 #define LOGK(fmt, args...) DEBUGK(fmt, ##args)
 
@@ -17,15 +18,11 @@
 #define PAGE(idx) ((u32)idx << 12)
 #define ASSERT_PAGE(addr) assert((addr & 0xfff) == 0)
 
-//内核页目录
-#define KERNEL_PAGE_DIR     0x1000
+#define KERNEL_MAP_BITS 0x4000
 
-static u32 KERNEL_PAGE_TABLE[] = {
-    0x2000,
-    0x3000
-};
 #define KERNEL_MEMORY_SIZE (0x100000 * sizeof(KERNEL_PAGE_TABLE))
 
+bitmap_t kernel_map;    //内核位图
 
 typedef struct ards_t {
     u64 base;
@@ -104,6 +101,11 @@ void memory_map_init() {
     }
 
     LOGK("Total pages %d free pages %d\n", total_pages, free_pages);
+
+    //初始化内核虚拟内存的位图，8位对齐
+    u32 length = (IDX(KERNEL_MEMORY_SIZE) - IDX(MEMORY_BASE)) >> 3;
+    bitmap_init(&kernel_map, (u8 *) KERNEL_MAP_BITS, length, IDX(MEMORY_BASE));
+    bitmap_scan(&kernel_map, memory_map_pages);
 }
 
 //分配一页物理内存
@@ -204,8 +206,6 @@ void mapping_init() {
 
     set_cr3((u32)pde);
 
-    BMB;
-
     enable_page();
 }
 
@@ -222,4 +222,43 @@ static page_entry_t *get_pte(u32 vaddr) {
 //刷新vaddr位置的块表
 static void flush_tlb(u32 vaddr) {
     asm volatile("invlpg (%0)"::"r"(vaddr) : "memory");
+}
+
+//扫描得到count个连续页
+static u32 scan_page(bitmap_t *map, u32 count) {
+    assert(count > 0);
+    int32 index = bitmap_scan(map, count);
+
+    if (index == EOF) {
+        panic("Scan page fail");
+    }
+
+    u32 addr = PAGE(index);
+    LOGK("Scan page 0x%p count %d\n", addr, count);
+    return addr;
+}
+
+//重置count个连续页
+static void reset_page(bitmap_t *map, u32 addr, u32 count) {
+    ASSERT_PAGE(addr);
+    assert(count > 0);
+    u32 index = IDX(addr);
+    for (size_t i = 0;i < count; i++) {
+        assert(bitmap_test(map, index + i));
+        bitmap_set(map, index + i, 0);
+    }
+}
+
+u32 alloc_kpage(u32 count) {
+    assert(count > 0);
+    u32 vaddr = scan_page(&kernel_map, count);
+    LOGK("ALLOC kernel page 0x%p count %d\n", vaddr, count);
+    return vaddr;
+}
+
+void free_kpage(u32 vaddr, u32 count) {
+    ASSERT_PAGE(vaddr);
+    assert(count > 0);
+    reset_page(&kernel_map, vaddr, count);
+    LOGK("FREE kernel page 0x%p count %d\n", vaddr, count);
 }

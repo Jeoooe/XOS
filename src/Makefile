@@ -40,6 +40,7 @@ $(BUILD)/kernel.bin: \
 	$(BUILD)/kernel/time.o \
 	$(BUILD)/kernel/memory.o \
 	$(BUILD)/kernel/rtc.o \
+	$(BUILD)/lib/bitmap.o \
 	$(BUILD)/lib/string.o \
 	$(BUILD)/lib/vsprintf.o \
 	$(BUILD)/lib/stdlib.o \
@@ -77,7 +78,7 @@ clean:
 
 .PHONY: bochs
 bochs: $(BUILD)/master.img
-	bochs -q
+	bochs -q -unlock
 
 QEMU:= qemu-system-i386 \
 	-m 32M \
