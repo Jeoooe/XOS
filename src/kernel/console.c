@@ -1,6 +1,7 @@
 #include <xos/console.h>
 #include <xos/io.h>
 #include <xos/string.h>
+#include <xos/interrupt.h>
 
 #define CRT_ADDR_REG        0x3d4
 #define CRT_DATA_REG        0x3d5
@@ -131,6 +132,7 @@ static void command_cr() {
 extern void start_beep();
 
 void console_write(char *buf, u32 count) {
+    bool intr = interrupt_disable();    //禁止中断
     char ch;
     for (;count; --count) {
         ch = *buf;
@@ -182,6 +184,7 @@ void console_write(char *buf, u32 count) {
         }
     }
     set_cursor();
+    set_interrupt_state(intr);
 }
 
 

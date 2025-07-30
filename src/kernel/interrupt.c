@@ -23,6 +23,7 @@ pointer_t idt_ptr;      //中断描述符指针
 
 handler_t handler_table[IDT_SIZE];
 extern handler_t handler_entry_table[ENTRY_SIZE];
+extern void syscall_handler();
 
 void send_eoi(int vector) {
     if (vector >= 0x20 && vector < 0x28) {
@@ -129,14 +130,13 @@ void idt_init() {
         handler_t handler = handler_entry_table[i];
         gate->offset0 = (u32)handler & 0xffff;
         gate->offset1 = ((u32)handler >> 16) & 0xffff;
-        // gate->type = 0b1110;
-        // gate->DPL = 0;  //内核
-        // gate->segment = 0;
-        // gate->reserved = 0;
-        // gate->present = 1;
+        gate->type = 0b1110;
+        gate->DPL = 0;  //内核
+        gate->segment = 0;
+        gate->reserved = 0;
+        gate->present = 1;
         gate->selector = 1 << 3;
-        gate->type_attr = 0b10001110;
-        gate->zero = 0;
+        // gate->type_attr = 0b10001110;
     }
 
     for (size_t i = 0;i < 0x20; ++i) {
@@ -146,6 +146,17 @@ void idt_init() {
     for (size_t i = 0x20;i < ENTRY_SIZE; ++i) {
         handler_table[i] = default_handler;
     }
+
+    //初始化系统调用
+    gate_t *gate = &idt[0x80];
+    gate->offset0 = (u32)syscall_handler & 0xffff;
+    gate->offset1 = ((u32)syscall_handler >> 16) & 0xffff;
+    gate->selector = 1 << 3;
+    gate->reserved = 0;
+    gate->type = 0b1110;
+    gate->segment = 0;
+    gate->DPL = 3;
+    gate->present = 1;
 
     idt_ptr.base = (u32)idt;
     idt_ptr.limit = sizeof(idt) - 1;

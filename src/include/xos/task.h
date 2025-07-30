@@ -27,7 +27,7 @@ typedef struct task_t {
     u32 priority;
     u32 ticks;              //剩余时间片
     u32 jiffies;            //上次执行时的全局时间片
-    u32 name[TASK_NAME_LEN];    //名字
+    char name[TASK_NAME_LEN];    //名字
     u32 uid;                    //用户ID
     u32 pde;                    //页目录物理地址
     struct bitmap_t *vmap;       //虚拟内存的位图
@@ -44,5 +44,7 @@ typedef struct task_frame_t {
 
 task_t *running_task();
 void schedule();
+
+void task_yield();
 
 #endif
