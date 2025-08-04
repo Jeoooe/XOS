@@ -3,13 +3,14 @@
 
 #include <xos/types.h>
 #include <xos/bitmap.h>
+#include <xos/list.h>
 
 #define KERNEL_USER 0
 #define NORMAL_USER 1
 
 #define TASK_NAME_LEN 16
 
-typedef u32 target_t();
+typedef void target_t();
 
 typedef enum task_state_t {
     TASK_INIT,          //初始化
@@ -23,6 +24,7 @@ typedef enum task_state_t {
 
 typedef struct task_t {
     u32 *stack; //内核栈
+    list_node_t node;
     task_state_t state;
     u32 priority;
     u32 ticks;              //剩余时间片
@@ -46,5 +48,10 @@ task_t *running_task();
 void schedule();
 
 void task_yield();
+void task_block(task_t *task, list_t *blist, task_state_t state);
+void task_unblock(task_t *task);
+
+void task_sleep(u32 ms);
+void task_wakeup();
 
 #endif

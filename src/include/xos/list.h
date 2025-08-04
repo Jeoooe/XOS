@@ -3,7 +3,9 @@
 
 #include <xos/types.h>
 
+
 #define element_offset(type, member) (u32)(&((type *)0)->member)
+//通过 member成员获取其所属的type结构体指针
 #define element_entry(type, member, ptr) (type *)((u32)ptr - element_offset(type, member))
 
 typedef struct list_node_t {
