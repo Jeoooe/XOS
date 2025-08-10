@@ -16,17 +16,17 @@ void mutex_lock(mutex_t *mutex);
 //释放互斥量   
 void mutex_unlock(mutex_t *mutex);  
 
-typedef struct spinlock_t {
+typedef struct lock_t {
     struct task_t *holder;
     mutex_t mutex;
     u32 repeat;         //重入次数
-} spinlock_t;
+} lock_t;
 
 //锁初始化
-void spin_init(spinlock_t *lock);
+void lock_init(lock_t *lock);
 //加锁
-void spin_lock(spinlock_t *lock);
+void lock_acquire(lock_t *lock);
 //解锁
-void spin_unlock(spinlock_t *lock);
+void lock_release(lock_t *lock);
 
 #endif

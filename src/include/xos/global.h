@@ -5,6 +5,12 @@
 
 #define GDT_SIZE 128
 
+#define KERNEL_CODE_IDX 1
+#define KERNEL_DATA_IDX 2
+
+#define KERNEL_CODE_SELECTOR (KERNEL_CODE_IDX << 3)
+#define KERNEL_DATA_SELECTOR (KERNEL_DATA_IDX << 3)
+
 //描述符
 typedef struct descriptor_t {
     u16 limit_low;      //段界限0-15
