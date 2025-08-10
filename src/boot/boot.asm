@@ -14,6 +14,7 @@ mov sp, 0x7c00
 ;;;;;中断调试
 
 ;打印字符串
+xchg bx, bx;bochs
 mov si, booting
 call print
 
