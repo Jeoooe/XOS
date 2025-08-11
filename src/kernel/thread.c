@@ -17,21 +17,14 @@ void idle_thread() {
     }
 }
 
-#include <xos/mutex.h>
-
-lock_t lock;
-
 
 void init_thread() {
-    lock_init(&lock);
     set_interrupt_state(true);
     u32 counter = 0;
 
     while (true) {
-        lock_acquire(&lock);
-        LOGK("init task... %d\n", counter++);
-        lock_release(&lock);
-        // sleep(500);
+        // LOGK("init task... %d\n", counter++);
+        sleep(500);
     }
 }
 
@@ -40,9 +33,7 @@ void test_thread() {
     u32 counter = 0;
 
     while (true) {
-        lock_acquire(&lock);
-        LOGK("test task... %d\n", counter++);
-        lock_release(&lock);
-        // sleep(799);
+        // LOGK("test task... %d\n", counter++);
+        sleep(799);
     }
 }

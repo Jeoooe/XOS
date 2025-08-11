@@ -34,9 +34,9 @@ _start:
 
     call console_init
 
-    xchg bx, bx
+    ; xchg bx, bx
     call gdt_init
-    xchg bx, bx
+    ; xchg bx, bx
 
     lgdt [gdt_ptr]
     jmp dword code_selector:_next ;加载选择子
@@ -50,10 +50,10 @@ _next:
     mov ss, ax
 
     call memory_init
-    xchg bx, bx
+    ; xchg bx, bx
 
     mov esp, 0x10000
-    xchg bx, bx
+    ; xchg bx, bx
     call kernel_init
 
     ; xchg bx, bx

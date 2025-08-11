@@ -150,7 +150,7 @@ extern syscall_check
 extern syscall_table
 global syscall_handler
 syscall_handler:
-    xchg bx, bx
+    ; xchg bx, bx
 
     ;验证中断号
     push eax
@@ -169,7 +169,7 @@ syscall_handler:
 
     ;向中断处理函数传递中断向量
     push 0x80 
-    xchg bx, bx
+    ; xchg bx, bx
     
     push edx
     push ecx
@@ -178,7 +178,7 @@ syscall_handler:
     ; 调用 系统调用 处理函数
     call [syscall_table + eax * 4]
 
-    xchg bx, bx
+    ; xchg bx, bx
     add esp, 12 ;恢复栈
 
     ;设置系统调用返回值
