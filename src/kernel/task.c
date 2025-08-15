@@ -153,6 +153,13 @@ void task_wakeup() {
     }
 }
 
+void task_activate(task_t *task) {
+    assert(task->magic == XOS_MAGIC);
+    if (task->uid != KERNEL_USER) {
+        tss.esp0 = (u32)task + PAGE_SIZE;
+    }
+}
+
 //获取当前正在运行的任务
 task_t *running_task() {
     asm volatile(
@@ -179,7 +186,7 @@ void schedule() {
         return;
     }
 
-    
+    task_activate(next);
     task_switch(next);
 }
  

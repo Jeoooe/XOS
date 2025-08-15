@@ -3,6 +3,7 @@
 #include <xos/debug.h>
 #include <xos/printk.h>
 #include <xos/task.h>
+#include <xos/stdio.h>
 
 #define LOGK(fmt, args...) DEBUGK(fmt, ##args)
 
@@ -27,7 +28,8 @@ static void real_init_thread() {
     char ch;
     while (true) {
         BMB;
-        asm volatile("in $0x92, %ax\n");
+        sleep(100);
+        printf("task is in user mode %d\n", counter ++);
     }
 }
 
