@@ -9,12 +9,15 @@
 #include <xos/string.h>
 #include <xos/syscall.h>
 #include <xos/list.h>
+#include <xos/global.h>
 
 #define NR_TASKS 64
 
 extern u32 volatile jiffies;
 extern u32 jiffy;
 extern bitmap_t kernel_map;
+extern tss_t tss;
+
 extern void task_switch(task_t *next);
 
 
@@ -175,6 +178,8 @@ void schedule() {
     if (next == current) {
         return;
     }
+
+    
     task_switch(next);
 }
  
@@ -205,6 +210,47 @@ static task_t *task_create(target_t target, const char *name, u32 priority, u32 
     task->magic = XOS_MAGIC;
 
     return task;
+}
+
+void task_to_user_mode(target_t target) {
+    task_t *task = running_task();
+
+    u32 addr = (u32)task + PAGE_SIZE;
+
+    addr -= sizeof(intr_frame_t);
+    intr_frame_t* iframe = (intr_frame_t*)(addr);
+
+    iframe->vector = 0x20;
+    iframe->edi = 1;
+    iframe->esi = 2;
+    iframe->ebp = 3;
+    iframe->esp_dummy = 4;
+    iframe->ebx = 5;
+    iframe->edx = 6;
+    iframe->ecx = 7;
+    iframe->eax = 8;
+
+    iframe->gs = 0;
+    iframe->ds = USER_DATA_SELECTOR;
+    iframe->es = USER_DATA_SELECTOR;
+    iframe->fs = USER_DATA_SELECTOR;
+    iframe->ss = USER_DATA_SELECTOR;
+    iframe->cs = USER_CODE_SELECTOR;
+
+    iframe->error = XOS_MAGIC;
+
+    //TODO
+    //分配用户态内存
+    u32 stack3 = alloc_kpage(1);    
+
+    iframe->eip = (u32)target;
+    iframe->eflags = (0 << 12 | 0b10 | 1 << 9);
+    iframe->esp = stack3 + PAGE_SIZE;
+
+    asm volatile(
+        "movl %0, %%esp\n"
+        "jmp interrupt_exit\n"::"m"(iframe)
+    );
 }
 
 static void task_setup() {

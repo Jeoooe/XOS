@@ -44,8 +44,42 @@ typedef struct task_frame_t {
     void (*eip)(void);
 } task_frame_t;
 
+//中断帧
+typedef struct intr_frame_t {
+    u32 vector;
+    u32 edi;
+    u32 esi;
+    u32 ebp;
+    u32 esp_dummy;
+
+    u32 ebx;
+    u32 edx;
+    u32 ecx;
+    u32 eax;
+
+    u32 gs;
+    u32 fs;
+    u32 es;
+    u32 ds;
+
+    u32 vector0;
+    
+    u32 error;
+
+    u32 eip;
+    u32 cs;
+    u32 eflags;
+    u32 esp;
+    u32 ss;
+} intr_frame_t;
+
+
 task_t *running_task();
 void schedule();
+
+/// @brief 进入用户模式,调用函数的地方不能有局部变量
+/// @param target 要进入的任务
+void task_to_user_mode(target_t target);
 
 void task_yield();
 void task_block(task_t *task, list_t *blist, task_state_t state);

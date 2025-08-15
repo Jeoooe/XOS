@@ -13,8 +13,10 @@ extern void mapping_init();
 extern void task_init();
 extern void syscall_init();
 extern void keyboard_init();
+extern void tss_init();
 
 void kernel_init() {
+    tss_init();
     memory_map_init();
     mapping_init();
     interrupt_init();
