@@ -4,6 +4,7 @@
 #include <xos/printk.h>
 #include <xos/task.h>
 #include <xos/stdio.h>
+#include <xos/arena.h>
 
 #define LOGK(fmt, args...) DEBUGK(fmt, ##args)
 
@@ -29,7 +30,7 @@ static void real_init_thread() {
     while (true) {
         BMB;
         sleep(100);
-        printf("task is in user mode %d\n", counter ++);
+        // printf("task is in user mode %d\n", counter ++);
     }
 }
 
@@ -44,7 +45,18 @@ void test_thread() {
     u32 counter = 0;
 
     while (true) {
-        // LOGK("test task... %d\n", counter++);
-        sleep(799);
+        void *ptr = kmalloc(1200);
+        LOGK("kmalloc 0x%p...\n", ptr);
+        kfree(ptr);
+
+        ptr = kmalloc(1024);
+        LOGK("kmalloc 0x%p...\n", ptr);
+        kfree(ptr);
+
+        ptr = kmalloc(54);
+        LOGK("kmalloc 0x%p...\n", ptr);
+        kfree(ptr);
+
+        sleep(2000);
     }
 }
