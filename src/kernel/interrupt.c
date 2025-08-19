@@ -99,12 +99,12 @@ void exception_handler(
     u32 vector0, u32 error, u32 eip, u32 cs, u32 eflags) {
 
     printk("\n ---EXCEPTION---");
-    printk("\n VECTOR: %x", vector);
-    printk("\n  ERROR: %x", error);
-    printk("\n EFLAGS: %x", eflags);
-    printk("\n     CS: %x", cs);
-    printk("\n    EIP: %x", eip);
-    printk("\n    ESP: %x", esp);
+    printk("\n VECTOR: 0x%x", vector);
+    printk("\n  ERROR: 0x%x", error);
+    printk("\n EFLAGS: 0x%x", eflags);
+    printk("\n     CS: 0x%x", cs);
+    printk("\n    EIP: 0x%x", eip);
+    printk("\n    ESP: 0x%x", esp);
 
     hang();
 }

@@ -1,10 +1,21 @@
 #ifndef XOS_MEMORY_H
 #define XOS_MEMORY_H
 
+/*
+ * PDE page directory   entry   页目录
+ * PTE page table       entry   页表
+ */
+
 #include <xos/types.h>
 
 #define PAGE_SIZE       0x1000
 #define MEMORY_BASE     0x100000
+
+//内核占用内存的大小 8M
+#define KERNEL_MEMORY_SIZE  0x800000
+
+//用户栈顶的地址 128M
+#define USER_STACK_TOP 0x8000000
 
 //内核页目录
 #define KERNEL_PAGE_DIR     0x1000
@@ -35,5 +46,10 @@ void set_cr3(u32 pde);
 u32 alloc_kpage(u32 count);
 //释放连续内核页
 void free_kpages(u32 addr, u32 count);
+
+// vaddr映射物理内存
+void link_page(u32 vaddr);
+// 去掉vaddr映射
+void unlink_page(u32 vaddr);
 
 #endif
