@@ -53,7 +53,7 @@ void set_cr3(u32 pde);
 //分配内核页
 u32 alloc_kpage(u32 count);
 //释放连续内核页
-void free_kpages(u32 addr, u32 count);
+void free_kpage(u32 addr, u32 count);
 
 // vaddr映射物理内存
 void link_page(u32 vaddr);
@@ -62,5 +62,8 @@ void unlink_page(u32 vaddr);
 
 //拷贝当前页目录
 page_entry_t *copy_pde();
+
+//系统调用 brk : 修改用户的堆内存最大值
+int32 sys_brk(void *addr);
 
 #endif

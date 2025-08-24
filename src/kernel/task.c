@@ -31,11 +31,23 @@ static task_t *idle_task;                   //空闲进程
 static task_t *get_free_task() {
     for (size_t i = 0;i < NR_TASKS; i++) {
         if (task_table[i] == NULL) {
-            task_table[i] = (task_t *)alloc_kpage(1);
-            return task_table[i];
+            task_t *task = (task_t *)alloc_kpage(1);
+            memset(task, 0, PAGE_SIZE);
+            task->pid = i;
+            task_table[i] = task;
+            return task;
         }
     }
     panic("No more tasks");
+}
+
+pid_t sys_getpid() {
+    const task_t *task = running_task();
+    return task->pid;
+}
+pid_t sys_getppid() {
+    const task_t *task = running_task();
+    return task->ppid;
 }
 
 //从任务表里寻找state的任务
@@ -198,7 +210,6 @@ void schedule() {
  
 static task_t *task_create(target_t target, const char *name, u32 priority, u32 uid) {
     task_t *task = get_free_task();
-    memset(task, 0, PAGE_SIZE);
 
     u32 stack = (u32)task + PAGE_SIZE;
 
@@ -220,6 +231,7 @@ static task_t *task_create(target_t target, const char *name, u32 priority, u32 
     task->uid = uid;
     task->vmap = &kernel_map;
     task->pde = KERNEL_PAGE_DIR;
+    task->brk = KERNEL_MEMORY_SIZE;
     task->magic = XOS_MAGIC;
 
     return task;

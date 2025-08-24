@@ -24,7 +24,13 @@ typedef struct arena_t {
     u32 magic;  //魔数，校验
 } arena_t;
 
+/// @brief 申请小块内存
+/// @param size 字节数
+/// @return 地址的指针
 void *kmalloc(size_t size);
+
+/// @brief 释放kmalloc得到的内存空间
+/// @param ptr 对应内存的指针
 void kfree(void *ptr);
 
 #endif

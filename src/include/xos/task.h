@@ -23,17 +23,20 @@ typedef enum task_state_t {
 } task_state_t;
 
 typedef struct task_t {
-    u32 *stack; //内核栈
-    list_node_t node;
-    task_state_t state;
-    u32 priority;
-    u32 ticks;              //剩余时间片
-    u32 jiffies;            //上次执行时的全局时间片
-    char name[TASK_NAME_LEN];    //名字
-    u32 uid;                    //用户ID
-    u32 pde;                    //页目录物理地址
-    struct bitmap_t *vmap;       //虚拟内存的位图
-    u32 magic;                  //内核魔数
+    u32 *stack;                     //内核栈
+    list_node_t node;               //阻塞节点
+    task_state_t state;             //状态
+    u32 priority;                   //优先级
+    u32 ticks;                      //剩余时间片
+    u32 jiffies;                    //上次执行时的全局时间片
+    char name[TASK_NAME_LEN];       //名字
+    u32 uid;                        //用户ID
+    pid_t pid;                      //进程 id
+    pid_t ppid;                     //父进程 id
+    u32 pde;                        //页目录物理地址
+    struct bitmap_t *vmap;          //虚拟内存的位图
+    u32 brk;                        //进程堆内存最高地址
+    u32 magic;                      //内核魔数
 } task_t;
 
 typedef struct task_frame_t {
@@ -87,5 +90,8 @@ void task_unblock(task_t *task);
 
 void task_sleep(u32 ms);
 void task_wakeup();
+
+pid_t sys_getpid();
+pid_t sys_getppid();
 
 #endif

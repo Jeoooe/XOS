@@ -14,17 +14,22 @@
 #define ZONE_VALID      1
 #define ZONE_RESERVED   2
 
-#define IDX(addr) ((u32)addr >> 12)         //获取页索引
-#define DIDX(addr) (((u32)addr >> 22) & 0x3ff)  //获取页目录索引
-#define TIDX(addr) (((u32)addr >> 12) & 0x3ff)  //获取页表索引
+//获取页索引
+#define IDX(addr) ((u32)addr >> 12)         
+//获取页目录索引
+#define DIDX(addr) (((u32)addr >> 22) & 0x3ff)  
+//获取页表索引
+#define TIDX(addr) (((u32)addr >> 12) & 0x3ff)  
+//根据页获取地址
 #define PAGE(idx) ((u32)idx << 12)
+//断言addr是页的开始
 #define ASSERT_PAGE(addr) assert((addr & 0xfff) == 0)
-
+//页目录蒙版
 #define PDE_MASK 0xFFC00000
 
 #define KERNEL_MAP_BITS 0x4000
 
-#define KERNEL_MEMORY_SIZE (0x100000 * sizeof(KERNEL_PAGE_TABLE))
+// #define KERNEL_MEMORY_SIZE (0x100000 * sizeof(KERNEL_PAGE_TABLE))
 
 bitmap_t kernel_map;    //内核位图
 
@@ -381,6 +386,31 @@ page_entry_t *copy_pde() {
     return pde;
 }
 
+int32 sys_brk(void *addr) {
+    LOGK("task brk 0x%p\n", addr);
+    u32 brk = (u32)addr;
+    ASSERT_PAGE(brk);
+
+    task_t *task = running_task();
+    assert(task->uid != KERNEL_USER);
+
+    // LOGK("MEMORY_SIZE: 0x%x, STACK_BOTTOM: 0x%x\n", KERNEL_MEMORY_SIZE, USER_STACK_BOTTOM);
+    assert(KERNEL_MEMORY_SIZE <= brk && brk <= USER_STACK_BOTTOM);
+
+    const u32 old_brk = task->brk;
+
+    if (old_brk > brk) {
+        for (; brk < old_brk; brk += PAGE_SIZE) {
+            unlink_page(brk);
+        }
+    }
+    else if (IDX(brk - old_brk) > free_pages) {
+        return -1;
+    }
+    task->brk = brk;
+    return 0;
+}
+
 typedef struct page_error_code_t {
     u8 present: 1;
     u8 write: 1;
@@ -410,10 +440,10 @@ void page_fault(
     task_t *task = running_task();
     assert(KERNEL_MEMORY_SIZE <= vaddr && vaddr < USER_STACK_TOP);
 
-    if (!code->present && (vaddr > USER_STACK_BOTTOM)) {
+    if (!code->present && (vaddr < task->brk || vaddr >= USER_STACK_BOTTOM)) {
         u32 page = PAGE(IDX(vaddr));
         link_page(page);
-        BMB;
+        // BMB;
         return;
     }
 
