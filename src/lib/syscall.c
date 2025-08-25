@@ -77,3 +77,7 @@ pid_t getpid() {
 pid_t getppid() {
     return _syscall0(SYS_NR_GETPPID);
 }
+
+time_t time() {
+    return _syscall0(SYS_NR_TIME);
+}
