@@ -48,6 +48,10 @@ typedef struct page_entry_t {
 u32 get_cr2();
 
 u32 get_cr3();
+
+
+/// @brief 设置cr3寄存器
+/// @param pde 页目录地址
 void set_cr3(u32 pde);
 
 //分配内核页

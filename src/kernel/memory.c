@@ -374,14 +374,57 @@ void unlink_page(u32 vaddr) {
     flush_tlb(vaddr);
 }
 
+//拷贝一页,返回拷贝后物理地址
+static u32 copy_page(void *page) {
+    const u32 paddr = get_page();
+
+    page_entry_t *entry = get_pte(0, false);
+    entry_init(entry, IDX(paddr));
+
+    memcpy((void *)0, (void *)page, PAGE_SIZE);
+
+    entry->present = false;
+
+    return paddr;
+}
+
 page_entry_t *copy_pde() {
     task_t *task = running_task();
+    //新页目录
     page_entry_t *pde = (page_entry_t *)alloc_kpage(1); //todo free
     memcpy(pde, (void *)task->pde, PAGE_SIZE);
 
     //最后的页表指向自己
     page_entry_t *entry = &pde[1023];
     entry_init(entry, IDX(pde));
+
+    page_entry_t *dentry;
+
+    for (size_t didx = 2; didx < 1023; didx++) {
+        dentry = &pde[didx];
+        if (!dentry->present) {
+            continue;
+        }
+
+        page_entry_t *pte = (page_entry_t *)(PDE_MASK | (didx << 12));
+
+        for (size_t tidx = 0; tidx < 1024; tidx++) {
+            entry = &pte[tidx];
+            if (!entry->present) continue;
+
+            assert(memory_map[entry->index] > 0);
+
+            entry->write = false;
+
+            memory_map[entry->index] ++;
+
+            assert(memory_map[entry->index] < 255);
+        }
+
+        const u32 paddr = copy_page(pte);
+        dentry->index = IDX(paddr);
+    }
+    set_cr3(task->pde);
 
     return pde;
 }
@@ -439,6 +482,29 @@ void page_fault(
     page_error_code_t *code = (page_error_code_t *)&error;
     task_t *task = running_task();
     assert(KERNEL_MEMORY_SIZE <= vaddr && vaddr < USER_STACK_TOP);
+
+    if (code->present) {
+        assert(code->write);
+
+        page_entry_t *pte = get_pte(vaddr, false);
+        page_entry_t *entry = &pte[TIDX(vaddr)];
+
+        assert(entry->present);
+        assert(memory_map[entry->index] > 0);
+        if (memory_map[entry->index] == 1) {
+            entry->write = true;
+            LOGK("WRITE page for 0x%p\n", vaddr);
+        }
+        else {
+            void *page = (void *)PAGE(IDX(vaddr));
+            const u32 paddr = copy_page(page);
+            memory_map[entry->index]--;
+            entry_init(entry, IDX(paddr));
+            flush_tlb(vaddr);
+            LOGK("COPY page for 0x%p\n", vaddr);
+        }
+        return;
+    }
 
     if (!code->present && (vaddr < task->brk || vaddr >= USER_STACK_BOTTOM)) {
         u32 page = PAGE(IDX(vaddr));

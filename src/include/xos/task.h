@@ -80,6 +80,8 @@ typedef struct intr_frame_t {
 task_t *running_task();
 void schedule();
 
+pid_t task_fork();
+
 /// @brief 进入用户模式,调用函数的地方不能有局部变量
 /// @param target 要进入的任务
 void task_to_user_mode(target_t target);
