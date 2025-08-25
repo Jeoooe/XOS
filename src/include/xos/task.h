@@ -36,6 +36,8 @@ typedef struct task_t {
     u32 pde;                        //页目录物理地址
     struct bitmap_t *vmap;          //虚拟内存的位图
     u32 brk;                        //进程堆内存最高地址
+    int status;                     //进程特殊状态
+    pid_t waitpid;                  //等待的进程
     u32 magic;                      //内核魔数
 } task_t;
 
@@ -81,6 +83,8 @@ task_t *running_task();
 void schedule();
 
 pid_t task_fork();
+void task_exit(int status);
+pid_t task_waitpid(pid_t pid, int32 *status);
 
 /// @brief 进入用户模式,调用函数的地方不能有局部变量
 /// @param target 要进入的任务

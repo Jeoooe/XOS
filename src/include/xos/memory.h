@@ -67,6 +67,9 @@ void unlink_page(u32 vaddr);
 //拷贝当前页目录
 page_entry_t *copy_pde();
 
+//释放页目录
+void free_pde();
+
 //系统调用 brk : 修改用户的堆内存最大值
 int32 sys_brk(void *addr);
 
