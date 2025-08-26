@@ -27,18 +27,18 @@ static void user_init_thread() {
     // u32 counter = 0;
     int status;
     while (true) {
-        pid_t pid = fork();
+        // pid_t pid = fork();
 
-        if (pid) {
-            printf("fork after parent %d, %d, %d...\n", pid, getpid(), getppid());
-            pid_t child = waitpid(pid, &status);
-            printf("wait pid %d status %d %d\n", child, status, time());
-        }
-        else {
-            printf("fork after child %d, %d, %d...\n", pid, getpid(), getppid());
-            sleep(1000);
-            exit(0);
-        }
+        // if (pid) {
+        //     printf("fork after parent %d, %d, %d...\n", pid, getpid(), getppid());
+        //     pid_t child = waitpid(pid, &status);
+        //     printf("wait pid %d status %d %d\n", child, status, time());
+        // }
+        // else {
+        //     printf("fork after child %d, %d, %d...\n", pid, getpid(), getppid());
+        //     sleep(1000);
+        //     exit(0);
+        // }
         sleep(1000);
     }
 }
@@ -46,6 +46,8 @@ static void user_init_thread() {
 void init_thread() {
     // set_interrupt_state(true);
     char temp[100]; //给栈顶留出足够的空间
+    set_interrupt_state(true);
+    test();
     task_to_user_mode(user_init_thread);
 }
 

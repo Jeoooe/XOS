@@ -89,8 +89,8 @@ INTERRUPT_HANDLER 0x2a, 0
 INTERRUPT_HANDLER 0x2b, 0
 INTERRUPT_HANDLER 0x2c, 0
 INTERRUPT_HANDLER 0x2d, 0
-INTERRUPT_HANDLER 0x2e, 0
-INTERRUPT_HANDLER 0x2f, 0
+INTERRUPT_HANDLER 0x2e, 0       ; harddisk1 硬盘主通道
+INTERRUPT_HANDLER 0x2f, 0       ; harddisk2 硬盘从通道
 
 section .data
 global handler_entry_table

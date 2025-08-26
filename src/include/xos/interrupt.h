@@ -19,7 +19,7 @@
 #define IRQ_MOUSE           12
 #define IRQ_MATH            13  //协处理器 x87
 #define IRQ_HARDDISK        14
-#define IRQ_HARDDIST_2      15
+#define IRQ_HARDDISK_2      15
 
 #define IRQ_MASTER_NR       0x20  //主片向量起始
 #define IRQ_SLAVE_NR        0x28  //从片向量起始

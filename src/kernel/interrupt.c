@@ -26,6 +26,7 @@ extern handler_t handler_entry_table[ENTRY_SIZE];
 extern void syscall_handler();
 extern void page_fault();
 
+//发送中断处理完成信号
 void send_eoi(int vector) {
     if (vector >= 0x20 && vector < 0x28) {
         outb(PIC_M_CTRL, PIC_EOI);

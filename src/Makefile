@@ -50,6 +50,7 @@ $(BUILD)/kernel.bin: \
 	$(BUILD)/kernel/clock.o \
 	$(BUILD)/kernel/time.o \
 	$(BUILD)/kernel/rtc.o \
+	$(BUILD)/kernel/ide.o \
 	$(BUILD)/kernel/memory.o \
 	$(BUILD)/kernel/arena.o \
 	$(BUILD)/kernel/keyboard.o \
