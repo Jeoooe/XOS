@@ -88,6 +88,14 @@ $(BUILD)/master.img: $(BUILD)/boot/boot.bin \
 	dd if=$(BUILD)/system.bin of=$@ bs=512 count=200 seek=10 conv=notrunc
 
 
+$(BUILD)/slave.img:
+	yes | bximage -q -hd=32 -func=create -sectsize=512 -imgmode=flat $@
+
+IMAGES:= $(BUILD)/master.img $(BUILD)/slave.img
+
+image: $(IMAGES)
+
+
 $(BUILD)/kernel.iso : $(BUILD)/kernel.bin $(SRC)/utils/grub.cfg
 #文件合法
 	grub-file --is-x86-multiboot2 $<
@@ -99,38 +107,44 @@ $(BUILD)/kernel.iso : $(BUILD)/kernel.bin $(SRC)/utils/grub.cfg
 
 	grub-mkrescue -o $@ $(BUILD)/iso
 
-.PHONY: clean
-clean:
-	rm -rf $(BUILD)/
-
 .PHONY: bochs bochsb
-bochs: $(BUILD)/master.img
+bochs: $(IMAGES)
 	bochs -q -f ../bochs/bochsrc -unlock
 
 bochsb: $(BUILD)/kernel.iso
 	bochs -q -f ../bochs/bochsrc.grub -unlock
 
 
-QEMU:= qemu-system-i386 \
-	-m 32M \
-	-audiodev pa,id=hda \
-	-machine pcspk-audiodev=hda \
-	-rtc base=localtime \
+QEMU:= qemu-system-i386 
+QEMU+= -m 32M 
+QEMU+= -audiodev pa,id=hda 
+QEMU+= -machine pcspk-audiodev=hda 
+QEMU+= -rtc base=localtime 
+QEMU+= -drive file=$(BUILD)/master.img,if=ide,index=0,media=disk,format=raw 
+QEMU+= -drive file=$(BUILD)/slave.img,if=ide,index=1,media=disk,format=raw 
 
-QEMU_DISK:=-boot c \
-	-drive file=$(BUILD)/master.img,if=ide,index=0,media=disk,format=raw \
+QEMU_DISK:=-boot c 
+	
 
 QEMU_CDROM:=-boot d \
 	-drive file=$(BUILD)/kernel.iso,media=cdrom \
 
 QEMU_DEBUG:=-s -S
 
+
+
 .PHONY: qemu qemug qemub
-qemu: $(BUILD)/master.img
+qemu: $(IMAGES)
 	$(QEMU) $(QEMU_DISK)
 
-qemug: $(BUILD)/master.img
+qemug: $(IMAGES)
 	$(QEMU) $(QEMU_DISK) $(QEMU_DEBUG)
 
 qemub: $(BUILD)/kernel.iso
 	$(QEMU) $(QEMU_CDROM) 
+
+
+
+.PHONY: clean
+clean:
+	rm -rf $(BUILD)/

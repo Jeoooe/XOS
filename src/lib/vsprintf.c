@@ -193,7 +193,7 @@ int vsprintf(char *buf, const char *fmt, va_list args) {
         case 'c':
             if (!(flags & LEFT)) {
                 while (--field_width > 0) {
-                    *str = ' ';
+                    *str++ = ' ';
                 }
             }
             *str++ = (unsigned char) va_arg(args, int);
@@ -269,7 +269,7 @@ int vsprintf(char *buf, const char *fmt, va_list args) {
 
 int sprintf(char *buf, const char *fmt, ...) {
     va_list args;
-    va_start(args, buf);
+    va_start(args, fmt);
     int i = vsprintf(buf, fmt, args);
     va_end(args);
     return i;

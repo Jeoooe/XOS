@@ -30,21 +30,9 @@ task_t *task = NULL;
 /*
     调试的系统调用
 */
-#include <xos/ide.h>
-#include <xos/string.h>
-extern ide_ctrl_t controllers[2];
+
 
 static u32 sys_test() {
-    u16 *buf = (u16 *)alloc_kpage(1);
-    LOGK("pio read buffer 0x%p\n", buf);
-    ide_disk_t *disk = &controllers[0].disks[0];
-    ide_pio_read(disk, buf, 4, 0);
-    BMB;
-    memset(buf, 0x5a, 512);
-
-    ide_pio_write(disk, buf, 1, 1);
-
-    free_kpage((u32)buf, 1);
     return 255;
 }
 
