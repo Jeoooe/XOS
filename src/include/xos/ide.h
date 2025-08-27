@@ -9,6 +9,37 @@
 
 #define IDE_CTRL_NR 2   //控制器数量
 #define IDE_DISK_NR 2   //控制器可挂载磁盘数量
+#define IDE_PART_NR 4   //磁盘分区数量, 仅主分区
+
+//分区表, 主引导扇区前16字节
+typedef struct part_entry_t {
+    u8 bootable;            //引导标志
+    u8 start_head;          //起始磁头
+    u8 start_sector: 6;     //起始扇区
+    u16 start_cylinder: 10; //起始柱面号
+    u8 system;              //分区字节类型
+    u8 end_head;            //分区结束磁头号
+    u8 end_sector: 6;       //分区结束扇区
+    u16 end_cylinder: 10;   //分区结束柱面
+    u32 start;              //分区起始物理扇区号 LBA
+    u32 count;              //分区占用扇区数
+} _packed part_entry_t;
+
+//主引导扇区内容
+typedef struct boot_sector_t {
+    u8 code[446];
+    part_entry_t entry[4];
+    u16 signature;          //55aa
+} _packed boot_sector_t;
+
+//分区信息
+typedef struct ide_part_t {
+    char name[8];
+    struct ide_disk_t *disk;        //磁盘指针
+    u32 system;                     //分区类型
+    u32 start;
+    u32 count;
+} ide_part_t;
 
 //IDE 磁盘
 typedef struct ide_disk_t {
@@ -20,7 +51,9 @@ typedef struct ide_disk_t {
     u32 cylinders;                  //柱面数
     u32 heads;                      //磁头数
     u32 sectors;                    //扇区数
-} ide_disk_t;           
+    ide_part_t parts[IDE_PART_NR];  //硬盘分区
+} ide_disk_t;       
+
 
 //IDE 控制器
 typedef struct ide_ctrl_t {
@@ -43,4 +76,4 @@ int ide_pio_read(ide_disk_t *disk, void *buf, u8 count, idx_t lba);
 
 int ide_pio_write(ide_disk_t *disk, void *buf, u8 count, idx_t lba);
 
-#endif
+#endif 

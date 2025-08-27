@@ -75,7 +75,8 @@ $(BUILD)/system.map: $(BUILD)/kernel.bin
 $(BUILD)/master.img: $(BUILD)/boot/boot.bin \
 	$(BUILD)/boot/loader.bin \
 	$(BUILD)/system.bin \
-	$(BUILD)/system.map
+	$(BUILD)/system.map \
+	$(SRC)/utils/master.sfdisk \
 	
 	yes | bximage -q -hd=16 -func=create -sectsize=512 -imgmode=flat $@
 	
@@ -87,6 +88,7 @@ $(BUILD)/master.img: $(BUILD)/boot/boot.bin \
 
 	dd if=$(BUILD)/system.bin of=$@ bs=512 count=200 seek=10 conv=notrunc
 
+	sfdisk $@ < $(SRC)/utils/master.sfdisk
 
 $(BUILD)/slave.img:
 	yes | bximage -q -hd=32 -func=create -sectsize=512 -imgmode=flat $@
