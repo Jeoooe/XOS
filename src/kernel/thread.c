@@ -21,11 +21,9 @@ void idle_thread() {
     }
 }
 
-extern u32 keyboard_read(char *buf, u32 count);
-
 static void user_init_thread() {
     // u32 counter = 0;
-    int status;
+    // int status;
     while (true) {
         // pid_t pid = fork();
 
@@ -54,7 +52,7 @@ void test_thread() {
     u32 counter = 0;
 
     while (true) {
-        printf("init thread %d %d %d...\n", getpid(), getppid(), counter++);
-        sleep(2000);
+        test();
+        // sleep(2000);
     }
 }

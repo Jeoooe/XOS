@@ -33,7 +33,8 @@ typedef unsigned short u16;
 typedef unsigned int u32;
 typedef unsigned long long u64;
 
-typedef int32 pid_t;
+typedef int32 pid_t;    //进程号
+typedef int32 dev_t;    //设备号
 
 typedef u32 time_t;
 typedef u32 idx_t;  //索引

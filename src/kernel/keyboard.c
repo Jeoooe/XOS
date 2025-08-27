@@ -5,6 +5,7 @@
 #include <xos/fifo.h>
 #include <xos/mutex.h>
 #include <xos/task.h>
+#include <xos/device.h>
 
 #define LOGK(fmt, args...) DEBUGK(fmt, ##args)
 
@@ -390,7 +391,7 @@ void keyboard_handler(int vector) {
 
 /// @brief 从键盘读取count个数据到buf,不可中断函数
 /// @return count
-u32 keyboard_read(char *buf, u32 count) {
+u32 keyboard_read(void *dev, char *buf, u32 count) {
     lock_acquire(&lock);
     int nr = 0;
     while (nr < count) {
@@ -418,4 +419,7 @@ void keyboard_init() {
 
     set_interupt_handler(IRQ_KEYBOARD, keyboard_handler);
     set_interupt_mask(IRQ_KEYBOARD, true);
+
+    device_install(DEV_CHAR, DEV_KEYBOARD,
+         NULL, "keyboard", 0, NULL, keyboard_read, NULL);
 }
