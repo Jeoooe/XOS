@@ -6,6 +6,7 @@
 #include <xos/assert.h>
 #include <xos/io.h>
 #include <xos/interrupt.h>
+#include <xos/device.h>
 
 // IDE 寄存器基址
 #define IDE_IOBASE_PRIMARY 0x1F0   // 主通道基地址
@@ -223,12 +224,20 @@ static void ide_pio_write_sector(ide_disk_t *disk, u16 *buf) {
     }
 }
 
-/// @brief PIO方式读磁盘, 异步或同步
-/// @param disk 磁盘
-/// @param buf 输出区域
-/// @param count 扇区数量
-/// @param lba 起始扇区
-/// @return 0 正常
+
+int ide_pio_ioctl(ide_disk_t *disk, int cmd, void *args, int flags) {
+    switch(cmd) {
+        case DEV_CMD_SECTOR_START:
+            return 0;
+        case DEV_CMD_SECTOR_COUNT:
+            return disk->total_lba;
+        default:
+            panic("device command %d cannot recognized", cmd);
+            break;
+    }
+    return EOF;
+}
+
 int ide_pio_read(ide_disk_t *disk, void *buf, u8 count, idx_t lba) {
     assert(count > 0);
     assert(!get_interrupt_state()); //不可中断
@@ -262,12 +271,7 @@ int ide_pio_read(ide_disk_t *disk, void *buf, u8 count, idx_t lba) {
     return 0;
 }
 
-/// @brief PIO方式写磁盘, 异步或同步
-/// @param disk 磁盘
-/// @param buf 输入数组
-/// @param count 扇区数量
-/// @param lba 起始扇区
-/// @return 0 正常
+
 int ide_pio_write(ide_disk_t *disk, void *buf, u8 count, idx_t lba) {
     assert(count > 0);
     assert(!get_interrupt_state()); //不可中断
@@ -298,10 +302,25 @@ int ide_pio_write(ide_disk_t *disk, void *buf, u8 count, idx_t lba) {
             ctrl->waiter = task;
             task_block(task, NULL, TASK_BLOCKED);
         }
+        LOGK("wrtie sector wait 1s, pid %d\n", task->pid);
+        task_sleep(100);
         ide_busy_wait(ctrl, IDE_SR_NULL);
     }
     lock_release(&ctrl->lock);
     return 0;
+}
+
+int ide_pio_part_ioctl(ide_part_t *part, int cmd, void *args, int flags) {
+    switch(cmd) {
+        case DEV_CMD_SECTOR_START:
+            return part->start;
+        case DEV_CMD_SECTOR_COUNT:
+            return part->count;
+        default:
+            panic("part device command %d cannot recognized", cmd);
+            break;
+    }
+    return EOF;
 }
 
 //读分区
@@ -454,9 +473,37 @@ static void ide_ctrl_init() {
     free_kpage((u32)buf, 1);
 }
 
+/// @brief ide设备初始化
+static void ide_install() {
+    for (size_t ctrl_i = 0; ctrl_i < IDE_CTRL_NR; ctrl_i++) {
+        ide_ctrl_t *ctrl = &controllers[ctrl_i];
+        for (size_t disk_i = 0; disk_i < IDE_DISK_NR; disk_i++) {
+            ide_disk_t *disk = &ctrl->disks[disk_i];
+            if (!disk->total_lba) continue;
+
+            dev_t dev = device_install(DEV_BLOCK, DEV_IDE_DISK,
+                disk, disk->name, 0,
+                ide_pio_ioctl, ide_pio_read, ide_pio_write
+            );
+
+            for (size_t i = 0;i < IDE_PART_NR; i++) {
+                ide_part_t *part = &disk->parts[i];
+                if (!part->count) continue;
+                device_install( DEV_BLOCK, DEV_IDE_PART,
+                    part, part->name, dev,
+                    ide_pio_part_ioctl, ide_pio_part_read, ide_pio_part_write
+                );
+            }
+        }
+    }
+}
+
+/// @brief ide硬盘初始化
 void ide_init() {
     LOGK("ide init...\n");
     ide_ctrl_init();
+
+    ide_install();
 
     set_interupt_handler(IRQ_HARDDISK, ide_handler);
     set_interupt_handler(IRQ_HARDDISK_2, ide_handler);

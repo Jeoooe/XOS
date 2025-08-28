@@ -2,6 +2,8 @@
 #include <xos/string.h>
 #include <xos/assert.h>
 #include <xos/debug.h>
+#include <xos/arena.h>
+
 
 #define DEVICE_NR 64
 
@@ -29,6 +31,8 @@ void device_init() {
         device->ioctl = NULL;
         device->read = NULL;
         device->write = NULL;
+
+        list_init(&device->request_list);
     }
 }
 
@@ -99,3 +103,59 @@ int device_write(dev_t dev, void *buf, size_t count, idx_t idx, int flags) {
 }
 
 
+static void do_request(request_t *req) {
+    switch (req->type) {
+        case REQ_READ:
+            device_read(req->dev, req->buf, req->count, req->idx, req->flags);
+            break;
+        case REQ_WRITE:
+            device_write(req->dev, req->buf, req->count, req->idx, req->flags);
+            break;
+        default:
+            panic("req type %d unknown", req->type);
+            break;
+    }
+}
+
+void device_request(dev_t dev, void *buf, 
+    u8 count, idx_t idx, int flags, u32 type) {
+    device_t *device = device_get(dev);
+    assert(device->type == DEV_BLOCK);
+    idx_t offset = idx + device_ioctl(device->dev, DEV_CMD_SECTOR_START, 0, 0);
+
+    //有父设备，则是分区
+    //要操作磁盘
+    if (device->parent) {
+        device = device_get(device->parent);
+    }
+
+    request_t *req = kmalloc(sizeof(request_t));
+    req->dev = dev;
+    req->buf = buf;
+    req->count = count;
+    req->idx = offset;
+    req->flags = flags;
+    req->type = type;
+    req->task = NULL;
+
+    bool empty = list_empty(&device->request_list);
+
+    list_push(&device->request_list, &req->node);
+
+    //请求列表不为空
+    if (!empty) {
+        req->task = running_task();
+        task_block(req->task, NULL, TASK_BLOCKED);
+    }
+
+    do_request(req);
+
+    list_remove(&req->node);
+    kfree(req);
+
+    if (!list_empty(&device->request_list)) {
+        request_t *nextreq = element_entry(request_t, node, device->request_list.tail.prev);
+        assert(nextreq->task->magic == XOS_MAGIC);
+        task_unblock(nextreq->task);
+    }
+}

@@ -66,14 +66,23 @@ typedef struct ide_ctrl_t {
     task_t *waiter;                 //等待任务
 } ide_ctrl_t;
 
+
+int ide_pio_ioctl(ide_disk_t *disk, int cmd, void *args, int flags);
+
 /// @brief 从磁盘中读取数据
 /// @param disk 磁盘
 /// @param buf 目标内存空间
 /// @param count 扇区数量
 /// @param lba 起始扇区
-/// @return 
+/// @return 0 正常
 int ide_pio_read(ide_disk_t *disk, void *buf, u8 count, idx_t lba);
 
+/// @brief PIO方式写磁盘, 异步或同步
+/// @param disk 磁盘
+/// @param buf 输入数组
+/// @param count 扇区数量
+/// @param lba 起始扇区
+/// @return 0 正常
 int ide_pio_write(ide_disk_t *disk, void *buf, u8 count, idx_t lba);
 
 #endif 
